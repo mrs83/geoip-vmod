@@ -13,13 +13,24 @@ Make targets:
     make check - runs the unit tests in src/tests/*.vtc
 
 In your VCL you could then use this vmod like the following. This
-sets the request header X-GeoIP to the requestor's geo (or Unknown).
+sets the request header X-GeoIP to the requestor's country code.
     ,----
     | import geoip;
     |
     | sub vcl_recv {
     |     set req.http.X-Forwarded-For = client.ip;
     |     set req.http.X-GeoIP = geoip.country(req.http.X-Forwarded-For)
+    | }
+    `----
+
+Instead, you can set the header with a JSON-like hash including all the
+data (city, latitude, longitude).
+    ,----
+    | import geoip;
+    |
+    | sub vcl_recv {
+    |     set req.http.X-Forwarded-For = client.ip;
+    |     set req.http.X-GeoIP = geoip.record(req.http.X-Forwarded-For)
     | }
     `----
 
