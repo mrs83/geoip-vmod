@@ -1,11 +1,16 @@
 /**/
 #include <stdlib.h>
 #include <GeoIP.h>
+#include <GeoIPCity.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
 #include "include/vct.h"
 #include "vcc_if.h"
+
+/* HTTP Header will be json-like */
+#define HEADER_MAXLEN 255
+#define HEADER_TMPL "{city:'%s', country:'%s', lat:%f, lon:%f}"
 
 //  Are there any code elements available which I myself can
 //  assign in my own application of ISO 3166-1?  Yes. There are
@@ -25,6 +30,7 @@
 //  `----
 
 static const char *unknownCountry= "AA";
+static const char *unknownRecord= "{}";
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
@@ -50,6 +56,39 @@ vmod_country(struct sess *sp, const char *ip)
 
     if (gi) {
       GeoIP_delete(gi);
+    }
+    return(cp);
+}
+
+const char *
+vmod_record(struct sess *sp, const char *ip)
+{
+    const char *record = NULL;
+    char r[HEADER_MAXLEN];
+    char *cp;
+    GeoIP *gc = NULL;
+    GeoIPRecord *gir;
+
+    gc = GeoIP_open_type(GEOIP_CITY_EDITION_REV1, GEOIP_STANDARD);
+    if (gc) {
+      gir = GeoIP_record_by_name(gc, ip);
+    }
+    if (!gir) {
+      record = unknownRecord;
+    }
+    else {
+      snprintf(r, HEADER_MAXLEN, HEADER_TMPL,
+            gir->city,
+            gir->country_code,
+            gir->latitude,
+            gir->longitude
+      );
+      record = r;
+    }
+    cp = WS_Dup(sp->wrk->ws, record);
+
+    if (gc) {
+      GeoIP_delete(gc);
     }
     return(cp);
 }

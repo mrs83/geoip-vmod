@@ -9,14 +9,16 @@ varnish v1 -vcl+backend {
 	import geoip from "${vmod_topbuild}/src/.libs/libvmod_geoip.so";
 
 	sub vcl_recv {
-		set req.http.X-GeoIP = geoip.country("127.0.0.1");
+                set req.http.X-GeoIP = geoip.record("8.8.8.8");
+                set req.http.X-GeoIP-Country = geoip.country("8.8.8.8");
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect req.http.X-GeoIP == "Unknown"
+	expect req.http.X-GeoIP == "{city:'Mountain View', country:'US', lat:37.419201, lon:-122.057404}"
+	expect req.http.X-GeoIP-Country == "US"
 }
 
 client c1 -run
