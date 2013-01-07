@@ -17,7 +17,7 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect req.http.X-GeoIP == "{city:'Mountain View', country:'US', lat:37.419201, lon:-122.057404}"
+	expect req.http.X-GeoIP == "Mountain View|US|37.419201|-122.057404\r\n"
 	expect req.http.X-GeoIP-Country == "US"
 }
 

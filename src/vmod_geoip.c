@@ -10,7 +10,7 @@
 
 /* HTTP Header will be json-like */
 #define HEADER_MAXLEN 255
-#define HEADER_TMPL "{'city':'%s', 'country':'%s', 'lat':%f, 'lon':%f}"
+#define HEADER_TMPL "%s|%s|%f|%f"
 
 //  Are there any code elements available which I myself can
 //  assign in my own application of ISO 3166-1?  Yes. There are
